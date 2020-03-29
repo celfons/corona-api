@@ -34,7 +34,7 @@
             await callDeaths();
         }
         function callConfirmeds() {
-            return $.get("https://api.covid19api.com/country/" + $("#countries").val() + "/status/confirmed", function(data, status) {
+            return $.get("https://api.covid19api.com/country/" + $("#countries").val() + "/status/confirmed/live", function(data, status) {
                 $.each(data, function(index, value) {
                     confirmeds.push({
                         x: formatDate(value.Date),
@@ -44,19 +44,9 @@
             });
         }
         function callDeaths() {
-            return $.get("https://api.covid19api.com/country/" + $("#countries").val() + "/status/deaths", function(data, status) {
+            return $.get("https://api.covid19api.com/country/" + $("#countries").val() + "/status/deaths/live", function(data, status) {
                 $.each(data, function(index, value) {
                     deaths.push({
-                        x: formatDate(value.Date),
-                        y: value.Cases
-                    });
-                });
-            });
-        }
-        function callRecovereds() {
-            return $.get("https://api.covid19api.com/country/" + $("#countries").val() + "/status/recovered", function(data, status) {
-                $.each(data, function(index, value) {
-                    recovereds.push({
                         x: formatDate(value.Date),
                         y: value.Cases
                     });
