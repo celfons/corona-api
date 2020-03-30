@@ -10,36 +10,44 @@ const URL = "https://api.covid19api.com/";
         $.get(URL + "countries", function(countries, status) {
             $.each(countries, function(index, value) {
                 if (value.Country != '') {
-                    $("#combobox").append("<option value='" + value.Slug + "'>" + value.Country + "</option>");
+                    $("#combobox-country").append("<option value='" + value.Slug + "'>" + value.Country + "</option>");
                 }
             });            
         });
-
-    $("#combobox").change(function() {
-            cleanArrays();
-
-            if($("#combobox option:selected").val() !== "world"){
-                callData($("#combobox option:selected").val()).then(resolve=> {
-                    let country = $("#combobox").val();                    
-                    buildChart(country);
-                });
-            } else {                
-                calledALL().then(resolve => {                    
-                    buildChartWorld();                
-                });
-            }
-        });
     });
 
-    async function callData(country) {
-        await called(country, "confirmed", confirmed);
-        await called(country, "deaths", deaths);
+    $("#combobox-filter").change(function() {
+        console.log(Entrou);
+        if($("#combobox-country option:selected").val() !== "world"){
+            buildChart($("#combobox-country").val(), $("#combobox-filter option:selected").val());
+        } else {
+            buildChartWorld($("#combobox-filter option:selected").val());
+        }
+    });
+
+    $("#combobox-country").change(function() {
+        cleanArrays();
+        if($("#combobox-country option:selected").val() !== "world"){ 
+            callData($("#combobox-country option:selected").val()).then(resolve=> {                
+                buildChart($("#combobox-country").val(), $("#combobox-filter option:selected").val());
+            });
+        } else {                
+            calledALL().then(resolve => {                    
+                buildChartWorld($("#combobox-filter option:selected").val());                
+            });
+        }
+    });
+
+    async function callData(slugCountry) {
+        await called(slugCountry, "confirmed", confirmed);
+        await called(slugCountry, "deaths", deaths);
     }
     
-    function called(country, type, arrays) { 
-        return $.get(URL + "country/" + country + "/status/" + type + "/live", function(data, status) {
+    function called(slugCountry, type, arrays) { 
+        return $.get(URL + "country/" + slugCountry + "/status/" + type + "/live", function(data, status) {
             $.each(data, function(index, value) {
-                buildArray(formatDate(value.Date), value.Cases, arrays);
+                if(value.Cases != 0)
+                    buildArray(formatDate(value.Date), value.Cases, arrays);
             });
         });
     }
@@ -47,11 +55,13 @@ const URL = "https://api.covid19api.com/";
     async function calledALL() { 
         return $.get(URL + "all", await function(data, status) {
             $.each(data, function(index, value) {
-                allData.push({
-                    x: formatDate(value.Date),
-                    y: value.Cases,
-                    statusCase: value.Status
-                });
+                if(value.Cases != 0) {
+                    allData.push({
+                        x: formatDate(value.Date),
+                        y: value.Cases,
+                        statusCase: value.Status
+                    });
+                }
             });
 
             $.each(allData, function(index, value) {
@@ -66,22 +76,24 @@ const URL = "https://api.covid19api.com/";
                         y: value.y
                     })
                 }                
-            });   
+            });
+            
+            allDataConfirmeds.sort(orderByDate);
+
+            allDataDeaths.sort(orderByDate);
         }).then(alert("Wait ... This request is large and may take a few minutes"));        
     }
-    
-    function compare(a,b) {
-        return a.x < b.x;
-      }
 
     function buildArray(data, cases, arrays) {
        arrays.push({
                     x: data,
                     y: cases
                 });
+
+        arrays.sort(orderByDate);
     } 
 
-    function buildChartWorld() {
+    function buildChartWorld(filter) {
         let options = {
             title: {
                 text: "Covid-19 - WORLD"
@@ -92,27 +104,13 @@ const URL = "https://api.covid19api.com/";
             },
             animationEnabled: true,
             exportEnabled: true,
-            data: [
-                {
-                    indexLabelPlacement: "outside",
-                    showInLegend: true,
-                    legendText: "Confirmed",
-                    type: "line", //change it to line, area, column, pie, etc
-                    dataPoints: groupByDateAndSumCases(allDataConfirmeds),
-                },
-                {
-                    indexLabelPlacement: "outside",
-                    showInLegend: true,
-                    legendText: "Deaths",
-                    type: "line", //change it to line, area, column, pie, etc
-                    dataPoints: groupByDateAndSumCases(allDataDeaths),
-                }
-            ]
+            data: dataFilter(filter)
         };
         $("#chartContainer").CanvasJSChart(options);
     }
 
-    function buildChart(country) {
+    function buildChart(country, filter) {
+        console.log(filter);
         let options = {
             title: {
                 text: "Covid-19 - " + country.toUpperCase(),
@@ -123,24 +121,50 @@ const URL = "https://api.covid19api.com/";
             },
             animationEnabled: true,
             exportEnabled: true,
-            data: [
-                {
-                indexLabelPlacement: "outside",
-                showInLegend: true,
-                legendText: "Confirmed",
-                type: "line", //change it to line, area, column, pie, etc
-                dataPoints: groupByDateAndSumCases(confirmed),
-                },
-                {
-                    indexLabelPlacement: "outside",
-                    showInLegend: true,
-                    legendText: "Deaths",
-                    type: "line", //change it to line, area, column, pie, etc
-                    dataPoints: groupByDateAndSumCases(deaths),
-                },
-            ]
+            data: dataFilter(filter)
         };
         $("#chartContainer").CanvasJSChart(options);
+    }
+
+    function dataFilter(filter){
+        let data = [];
+        switch(filter) {
+            case "confirmed":
+                data.push({
+                    indexLabelPlacement: "outside",
+                    showInLegend: true,
+                    legendText: "Confirmed",
+                    type: "line", //change it to line, area, column, pie, etc
+                    dataPoints: groupByDateAndSumCases(confirmed),                        
+                })
+            break;
+            case "deaths":
+                data.push({
+                    indexLabelPlacement: "outside",
+                    showInLegend: true,
+                    legendText: "Confirmed",
+                    type: "line", //change it to line, area, column, pie, etc
+                    dataPoints: groupByDateAndSumCases(deaths),                        
+                })
+            break;
+            default:
+                data.push({
+                        indexLabelPlacement: "outside",
+                        showInLegend: true,
+                        legendText: "Confirmed",
+                        type: "line", //change it to line, area, column, pie, etc
+                        dataPoints: groupByDateAndSumCases(confirmed),
+                    },
+                    {
+                        indexLabelPlacement: "outside",
+                        showInLegend: true,
+                        legendText: "Deaths",
+                        type: "line", //change it to line, area, column, pie, etc
+                        dataPoints: groupByDateAndSumCases(deaths), 
+                    });        
+                }
+        
+        return data
     }
 
     function cleanArrays() {
@@ -171,4 +195,8 @@ const URL = "https://api.covid19api.com/";
         }, {});
 
         return result;
+    }
+
+    function orderByDate(date1, date2) {
+        return new Date(date2.x) - new Date(date1.x);
     }

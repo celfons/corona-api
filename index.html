@@ -39,18 +39,19 @@
         <section>
             <div class="container">
                 <div class="row">
-                    <div class="col-12">
-                        <div id="message">
-                            
-                        </div>
-
-                        <select id="combobox" class="form-control form-control-lg">
-                            <option>Please choose from countries</option>
-                            <option value="world">World</option>
-                        </select>
-                        
-
+                    <div class="col-md-8">
+                            <select id="combobox-country" class="form-control form-control-lg">
+                                <option>Please choose from countries</option>
+                                <option value="world">World</option>
+                            </select>
                     </div>
+                    <div class="col-md-3">
+                        <select id="combobox-filter" class="form-control form-control-lg">
+                            <option value="confirmed-death">Confirmeds x Deaths</option>
+                            <option value="confirmed">Confirmeds</option>
+                            <option value="death">Deaths</option>
+                        </select>
+                    </div>        
                 </div>
                 <div class="row">
                     <div class="col-12">
