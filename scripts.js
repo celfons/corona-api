@@ -7,6 +7,9 @@ let allDataDeaths = [];
 const URL = "https://api.covid19api.com/";
 
     $(document).ready(function() {
+
+        setInterval(function(){ allData.length = 0; }, 100000);
+        
         $.get(URL + "countries", function(countries, status) {
             $.each(countries, function(index, value) {
                 if (value.Country != '') {
@@ -19,9 +22,9 @@ const URL = "https://api.covid19api.com/";
     $("#combobox-filter").change(function() {
         if($("#combobox-country option:selected").val() !== "0") {
             if($("#combobox-country option:selected").val() !== "world"){
-                buildChart($("#combobox-country").val(), $("#combobox-filter option:selected").val());
+                buildChart($("#combobox-country").val(), $("#combobox-filter option:selected").val(), confirmed, deaths);
             } else {
-                buildChartWorld($("#combobox-filter option:selected").val());
+                buildChart($("#combobox-country").val(), $("#combobox-filter option:selected").val(), allDataConfirmeds, allDataDeaths);
             }
         }
     });
@@ -30,12 +33,16 @@ const URL = "https://api.covid19api.com/";
         cleanArrays();
         if($("#combobox-country option:selected").val() !== "world"){ 
             callData($("#combobox-country option:selected").val()).then(resolve=> {                
-                buildChart($("#combobox-country").val(), $("#combobox-filter option:selected").val());
+                buildChart($("#combobox-country").val(), $("#combobox-filter option:selected").val(), confirmed, deaths);
             });
-        } else {                
-            calledALL().then(resolve => {                    
-                buildChartWorld($("#combobox-filter option:selected").val());                
-            });
+        } else {     
+            if(allData.length < 1) {           
+                calledALL().then(resolve => {                    
+                    buildChart($("#combobox-country").val(), $("#combobox-filter option:selected").val(), allDataConfirmeds, allDataDeaths);                
+                });
+            } else {
+                buildChart($("#combobox-country").val(), $("#combobox-filter option:selected").val(), allDataConfirmeds, allDataDeaths);
+            }
         }
     });
 });
@@ -93,25 +100,9 @@ const URL = "https://api.covid19api.com/";
                 });
 
         arrays.sort(orderByDate);
-    } 
-
-    function buildChartWorld(filter) {
-        let options = {
-            title: {
-                text: "Covid-19 - WORLD"
-            },
-            legend: {
-                horizontalAlign: "right",
-                verticalAlign: "center"
-            },
-            animationEnabled: true,
-            exportEnabled: true,
-            data: dataFilter(filter, allDataConfirmeds, allDataDeaths)
-        };
-        $("#chartContainer").CanvasJSChart(options);
     }
-
-    function buildChart(country, filter) {
+    
+    function buildChart(country, filter, ...arrays) {
         console.log(filter);
         let options = {
             title: {
@@ -123,7 +114,7 @@ const URL = "https://api.covid19api.com/";
             },
             animationEnabled: true,
             exportEnabled: true,
-            data: dataFilter(filter, confirmed, deaths)
+            data: dataFilter(filter, arrays[0], arrays[1])
         };
         $("#chartContainer").CanvasJSChart(options);
     }
@@ -174,11 +165,8 @@ const URL = "https://api.covid19api.com/";
 
     function cleanArrays() {
         confirmed.length = 0;
-        deaths.length = 0;
-        allData.length = 0;
-        allDataConfirmeds.length = 0;
-        allDataDeaths.length = 0;
-        }
+        deaths.length = 0;        
+    }
 
     function formatDate(date) {
         let year = date.substr(0, 4);
