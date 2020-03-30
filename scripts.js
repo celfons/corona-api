@@ -141,7 +141,10 @@ const URL = "https://api.covid19api.com/";
     function cleanArrays() {
         confirmed.length = 0;
         deaths.length = 0;
-    }
+        allData.length = 0;
+        allDataConfirmeds.length = 0;
+        allDataDeaths.length = 0;
+        }
 
     function formatDate(date) {
         let year = date.substr(0, 4);
