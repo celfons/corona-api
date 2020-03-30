@@ -20,7 +20,8 @@ const URL = "https://api.covid19api.com/";
 
             if($("#combobox option:selected").val() !== "world"){
                 callData($("#combobox option:selected").val()).then(resolve=> {
-                    buildChart();
+                    let country = $("#combobox").val();                    
+                    buildChart(country);
                 });
             } else {                
                 calledALL().then(resolve => {                    
@@ -64,11 +65,15 @@ const URL = "https://api.covid19api.com/";
                         x: value.x,
                         y: value.y
                     })
-                }
-            });            
+                }                
+            });   
         }).then(alert("Wait ... This request is large and may take a few minutes"));        
     }
-   
+    
+    function compare(a,b) {
+        return a.x < b.x;
+      }
+
     function buildArray(data, cases, arrays) {
        arrays.push({
                     x: data,
@@ -79,7 +84,7 @@ const URL = "https://api.covid19api.com/";
     function buildChartWorld() {
         let options = {
             title: {
-                text: "Result Graph"
+                text: "Covid-19 - WORLD"
             },
             legend: {
                 horizontalAlign: "right",
@@ -107,10 +112,10 @@ const URL = "https://api.covid19api.com/";
         $("#chartContainer").CanvasJSChart(options);
     }
 
-    function buildChart() {
+    function buildChart(country) {
         let options = {
             title: {
-                text: "Result Graph"
+                text: "Covid-19 - " + country.toUpperCase(),
             },
             legend: {
                 horizontalAlign: "right",
@@ -124,14 +129,14 @@ const URL = "https://api.covid19api.com/";
                 showInLegend: true,
                 legendText: "Confirmed",
                 type: "line", //change it to line, area, column, pie, etc
-                dataPoints: confirmed,
+                dataPoints: groupByDateAndSumCases(confirmed),
                 },
                 {
                     indexLabelPlacement: "outside",
                     showInLegend: true,
                     legendText: "Deaths",
                     type: "line", //change it to line, area, column, pie, etc
-                    dataPoints: deaths,
+                    dataPoints: groupByDateAndSumCases(deaths),
                 },
             ]
         };
