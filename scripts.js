@@ -136,7 +136,7 @@ const URL = "https://api.covid19api.com/";
                 data.push({
                     indexLabelPlacement: "outside",
                     showInLegend: true,
-                    legendText: "Confirmed",
+                    legendText: "Total Confirmed",
                     type: "line", //change it to line, area, column, pie, etc
                     dataPoints: groupByDateAndSumCases(confirm),                        
                 })
@@ -147,7 +147,7 @@ const URL = "https://api.covid19api.com/";
                     color: "red",
                     indexLabelPlacement: "outside",
                     showInLegend: true,
-                    legendText: "Confirmed",
+                    legendText: "Total Deaths",
                     type: "line", //change it to line, area, column, pie, etc
                     dataPoints: groupByDateAndSumCases(death),                        
                 })
@@ -156,14 +156,14 @@ const URL = "https://api.covid19api.com/";
                 data.push({
                         indexLabelPlacement: "outside",
                         showInLegend: true,
-                        legendText: "Confirmed",
+                        legendText: "Total Confirmed",
                         type: "line", //change it to line, area, column, pie, etc
                         dataPoints: groupByDateAndSumCases(confirm),
                     },
                     {
                         indexLabelPlacement: "outside",
                         showInLegend: true,
-                        legendText: "Deaths",
+                        legendText: "Total Deaths",
                         type: "line", //change it to line, area, column, pie, etc
                         dataPoints: groupByDateAndSumCases(death), 
                     });        
