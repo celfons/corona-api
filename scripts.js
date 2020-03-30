@@ -1,53 +1,45 @@
-let confirmeds = [];
+let confirmed = [];
 let deaths = [];
 let allcountry = [];
+const URL = "https://api.covid19api.com/";
 
     $(document).ready(function() {
-        $.get("https://api.covid19api.com/countries", function(data, status) {
-            let $countries = $("#countries");
-            $.each(data, function(index, value) {
+        $.get(URL + "countries", function(countries, status) {
+            $.each(countries, function(index, value) {
                 if (value.Country != '') {
-                    $countries.append("<option>" + value.Country + "</option>");
+                    $("#combobox").append("<option>" + value.Country + "</option>");
                     allcountry[index] = value.Country;
                 }
             });
         });
 
-    $("#countries").change(function() {
-            emptyArrays();
-            let country = $("#countries").val();
-            callData(country).then(resolve=> {
+    $("#combobox").change(function() {
+            cleanArrays();
+            callData($("#combobox").val()).then(resolve=> {
                 buildChart();
             });
         });
     });
 
     async function callData(country) {
-        await callConfirmeds(country);
-        await callDeaths(country);
+        await called(country, "confirmed", confirmed);
+        await called(country, "deaths", deaths);
     }
     
-    function callConfirmeds(country) {
-        return $.get("https://api.covid19api.com/country/" + country + "/status/confirmed/live", function(data, status) {
+    function called(country, type, arrays) { 
+        return $.get(URL + "country/" + country + "/status/" + type + "/live", function(data, status) {
             $.each(data, function(index, value) {
-                confirmeds.push({
-                    x: formatDate(value.Date),
-                    y: value.Cases
-                });
+                buildArray(formatDate(value.Date), value.Cases, arrays);
             });
         });
     }
-
-    function callDeaths(country) {
-        return $.get("https://api.covid19api.com/country/" + country + "/status/deaths/live", function(data, status) {
-            $.each(data, function(index, value) {
-                deaths.push({
-                    x: formatDate(value.Date),
-                    y: value.Cases
+   
+    function buildArray(data, cases, arrays) {
+       arrays.push({
+                    x: data,
+                    y: cases
                 });
-            });
-        });
-    }
+    } 
 
     function buildChart() {
         let options = {
@@ -66,7 +58,7 @@ let allcountry = [];
                 showInLegend: true,
                 legendText: "Confirmed",
                 type: "line", //change it to line, area, column, pie, etc
-                dataPoints: confirmeds,
+                dataPoints: confirmed,
                 },
                 {
                     indexLabelPlacement: "outside",
@@ -80,8 +72,8 @@ let allcountry = [];
         $("#chartContainer").CanvasJSChart(options);
     }
 
-    function emptyArrays() {
-        confirmeds.length = 0;
+    function cleanArrays() {
+        confirmed.length = 0;
         deaths.length = 0;
     }
 
