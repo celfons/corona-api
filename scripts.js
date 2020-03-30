@@ -14,14 +14,15 @@ const URL = "https://api.covid19api.com/";
                 }
             });            
         });
-    });
+    
 
     $("#combobox-filter").change(function() {
-        console.log(Entrou);
-        if($("#combobox-country option:selected").val() !== "world"){
-            buildChart($("#combobox-country").val(), $("#combobox-filter option:selected").val());
-        } else {
-            buildChartWorld($("#combobox-filter option:selected").val());
+        if($("#combobox-country option:selected").val() !== "0") {
+            if($("#combobox-country option:selected").val() !== "world"){
+                buildChart($("#combobox-country").val(), $("#combobox-filter option:selected").val());
+            } else {
+                buildChartWorld($("#combobox-filter option:selected").val());
+            }
         }
     });
 
@@ -37,6 +38,7 @@ const URL = "https://api.covid19api.com/";
             });
         }
     });
+});
 
     async function callData(slugCountry) {
         await called(slugCountry, "confirmed", confirmed);
@@ -104,7 +106,7 @@ const URL = "https://api.covid19api.com/";
             },
             animationEnabled: true,
             exportEnabled: true,
-            data: dataFilter(filter)
+            data: dataFilter(filter, allDataConfirmeds, allDataDeaths)
         };
         $("#chartContainer").CanvasJSChart(options);
     }
@@ -121,13 +123,14 @@ const URL = "https://api.covid19api.com/";
             },
             animationEnabled: true,
             exportEnabled: true,
-            data: dataFilter(filter)
+            data: dataFilter(filter, confirmed, deaths)
         };
         $("#chartContainer").CanvasJSChart(options);
     }
 
-    function dataFilter(filter){
-        let data = [];
+    function dataFilter(filter, confirm, death ){
+        let data = [];        
+
         switch(filter) {
             case "confirmed":
                 data.push({
@@ -135,16 +138,18 @@ const URL = "https://api.covid19api.com/";
                     showInLegend: true,
                     legendText: "Confirmed",
                     type: "line", //change it to line, area, column, pie, etc
-                    dataPoints: groupByDateAndSumCases(confirmed),                        
+                    dataPoints: groupByDateAndSumCases(confirm),                        
                 })
             break;
             case "deaths":
                 data.push({
+                    lineColor: "red",
+                    color: "red",
                     indexLabelPlacement: "outside",
                     showInLegend: true,
                     legendText: "Confirmed",
                     type: "line", //change it to line, area, column, pie, etc
-                    dataPoints: groupByDateAndSumCases(deaths),                        
+                    dataPoints: groupByDateAndSumCases(death),                        
                 })
             break;
             default:
@@ -153,14 +158,14 @@ const URL = "https://api.covid19api.com/";
                         showInLegend: true,
                         legendText: "Confirmed",
                         type: "line", //change it to line, area, column, pie, etc
-                        dataPoints: groupByDateAndSumCases(confirmed),
+                        dataPoints: groupByDateAndSumCases(confirm),
                     },
                     {
                         indexLabelPlacement: "outside",
                         showInLegend: true,
                         legendText: "Deaths",
                         type: "line", //change it to line, area, column, pie, etc
-                        dataPoints: groupByDateAndSumCases(deaths), 
+                        dataPoints: groupByDateAndSumCases(death), 
                     });        
                 }
         
@@ -200,3 +205,4 @@ const URL = "https://api.covid19api.com/";
     function orderByDate(date1, date2) {
         return new Date(date2.x) - new Date(date1.x);
     }
+
