@@ -7,7 +7,7 @@ const URL = "https://api.covid19api.com/";
         $.get(URL + "countries", function(countries, status) {
             $.each(countries, function(index, value) {
                 if (value.Country != '') {
-                    $("#combobox").append("<option>" + value.Country + "</option>");
+                    $("#combobox").append("<option value='" + value.Slug + "'>" + value.Country + "</option>");
                     allcountry[index] = value.Country;
                 }
             });
@@ -15,7 +15,7 @@ const URL = "https://api.covid19api.com/";
 
     $("#combobox").change(function() {
             cleanArrays();
-            callData($("#combobox").val()).then(resolve=> {
+            callData($("#combobox option:selected").val()).then(resolve=> {
                 buildChart();
             });
         });
